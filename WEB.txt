@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthHub - Complete Health Assistant</title>
+    <style>
+        :root {
+            --medicine-color: #FF6B6B;
+            --health-color: #118AB2;
+            --food-color: #06D6A0;
+            --bmi-color: #A05CFF;
+            --text-color: #333;
+            --light-bg: #F7FFF7;
+            --card-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 25px;
+            background: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .tab-btn.active {
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 30px;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .upload-box {
+            border: 2px dashed #FFD166;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background: rgba(255,209,102,0.1);
+            transition: all 0.3s;
+        }
+
+        .upload-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .result-box {
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+            border-left: 5px solid;
+            background: rgba(0,0,0,0.03);
+        }
+
+        .remedy-card {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+            background: white;
+            box-shadow: var(--card-shadow);
+        }
+
+        .bmi-scale {
+            display: flex;
+            height: 40px;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 20px;
+            box-shadow: var(--card-shadow);
+        }
+
+        /* Color assignments */
+        #tab1 h2, #tab1 .tab-btn.active, #tab1 .result-box, #tab1 .remedy-card { color: var(--medicine-color); border-color: var(--medicine-color); }
+        #tab2 h2, #tab2 .tab-btn.active, #tab2 .result-box, #tab2 .remedy-card { color: var(--health-color); border-color: var(--health-color); }
+        #tab3 h2, #tab3 .tab-btn.active, #tab3 .remedy-card { color: var(--food-color); border-color: var(--food-color); }
+        #tab4 h2, #tab4 .tab-btn.active, #tab4 .result-box { color: var(--bmi-color); border-color: var(--bmi-color); }
+
+        #tab1 button, #tab1 .upload-label { background: var(--medicine-color); }
+        #tab2 button { background: var(--health-color); }
+        #tab4 button { background: var(--bmi-color); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            header {
+                padding: 20px 10px;
+            }
+            .tab-btn {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-heartbeat"></i> HealthHub</h1>
+            <p>Your complete health and wellness assistant</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab('tab1')"><i class="fas fa-pills"></i> Medicine ID</button>
+            <button class="tab-btn" onclick="openTab('tab2')"><i class="fas fa-stethoscope"></i> Symptom Checker</button>
+            <button class="tab-btn" onclick="openTab('tab3')"><i class="fas fa-utensils"></i> Food Safety</button>
+            <button class="tab-btn" onclick="openTab('tab4')"><i class="fas fa-weight"></i> BMI Calculator</button>
+        </div>
+
+        <!-- Medicine Checker -->
+        <div id="tab1" class="tab-content active">
+            <h2><i class="fas fa-capsules"></i> Medicine Identification</h2>
+            <div class="upload-box">
+                <i class="fas fa-camera fa-3x" style="color: var(--medicine-color); margin-bottom: 15px;"></i>
+                <h3>Upload Medicine Photo</h3>
+                <p>Take a picture of the front or back of your medicine</p>
+                <input type="file" id="med-image" accept="image/*" style="display: none;">
+                <label for="med-image" class="upload-label" style="color: white; margin-top: 15px;">
+                    <i class="fas fa-upload"></i> Select Image
+                </label>
+            </div>
+
+            <div class="result-box" id="med-result">
+                <h3><i class="fas fa-info-circle"></i> Medicine Information</h3>
+                <div class="med-detail">
+                    <p><strong>Generic Name:</strong> <span id="med-name">Paracetamol (Acetaminophen)</span></p>
+                    <p><strong>Brand Names:</strong> <span id="med-brands">Tylenol, Panadol, Calpol</span></p>
+                    <p><strong>Uses:</strong> <span id="med-uses">Pain relief, fever reduction</span></p>
+                    <p><strong>Dosage:</strong> <span id="med-dosage">500-1000mg every 4-6 hours (max 4000mg/day)</span></p>
+                    <p><strong>Side Effects:</strong> <span id="med-sidefx">Rare at normal doses (liver damage in overdose)</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Symptom Checker -->
+        <div id="tab2" class="tab-content">
+            <h2><i class="fas fa-notes-medical"></i> Symptom Checker</h2>
+            <div class="input-group">
+                <label for="symptoms"><i class="fas fa-comment-medical"></i> Describe your symptoms:</label>
+                <textarea id="symptoms" rows="4" placeholder="Example: Headache, fever, and sore throat for 3 days..."></textarea>
+                <label for="age"><i class="fas fa-user"></i> Age:</label>
+                <input type="number" id="age" placeholder="Your age in years">
+                <label for="gender"><i class="fas fa-venus-mars"></i> Gender:</label>
+                <select id="gender">
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <button onclick="analyzeSymptoms()" style="width: 100%;">
+                <i class="fas fa-diagnoses"></i> Analyze Symptoms
+            </button>
+
+            <div class="result-box" id="health-result">
+                <h3><i class="fas fa-clipboard-check"></i> Assessment Result</h3>
+                <p><strong>Possible Condition:</strong> <span id="condition">Common Cold (Viral Upper Respiratory Infection)</span></p>
+                <p><strong>Common Symptoms:</strong> <span id="symptom-list">Fever, runny nose, sore throat, cough</span></p>
+                
+                <div class="remedy-card">
+                    <h3><i class="fas fa-lightbulb"></i> Recommended Care</h3>
+                    <ul id="remedies" style="padding-left: 20px;">
+                        <li>Rest and drink plenty of fluids</li>
+                        <li>Take Paracetamol (500mg every 6 hours) for fever/pain</li>
+                        <li>Use saline nasal drops for congestion</li>
+                        <li>Gargle with warm salt water for sore throat</li>
+                    </ul>
+                </div>
+                
+                <div class="remedy-card" style="border-color: #ff9800;">
+                    <h3><i class="fas fa-exclamation-triangle"></i> When to See a Doctor</h3>
+                    <ul style="padding-left: 20px; color: #d32f2f;">
+                        <li>Fever above 103°F (39.4°C)</li>
+                        <li>Difficulty breathing</li>
+                        <li>Symptoms lasting more than 10 days</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Food Safety -->
+        <div id="tab3" class="tab-content">
+            <h2><i class="fas fa-seedling"></i> Food Authenticity Tests</h2>
+            <p style="margin-bottom: 20px;">Learn how to check common food items for adulteration:</p>
+            
+            <div class="remedy-card">
+                <h3><i class="fas fa-cheese"></i> Paneer/Cheese Test</h3>
+                <p><strong>Method:</strong> Add 2 drops of iodine solution to a small piece</p>
+                <p><strong>Authentic:</strong> No color change (remains brown)</p>
+                <p><strong>Adulterated:</strong> Turns blue-black (indicates starch)</p>
+                <p><strong>Why it matters:</strong> Starch is added to increase weight</p>
+            </div>
+
+            <div class="remedy-card">
+                <h3><i class="fas fa-wine-bottle"></i> Honey Purity Test</h3>
+                <p><strong>Method:</strong> Drop honey in a glass of water</p>
+                <p><strong>Pure honey:</strong> Stays intact, sinks slowly</p>
+                <p><strong>Adulterated:</strong> Dissolves quickly in water</p>
+                <p><strong>Alternative test:</strong> Pure honey burns if held to flame</p>
+            </div>
+
+            <div class="remedy-card">
+                <h3><i class="fas fa-pepper-hot"></i> Turmeric Test</h3>
+                <p><strong>Method:</strong> Mix with water, add baking soda</p>
+                <p><strong>Pure turmeric:</strong> Turns red</p>
+                <p><strong>Adulterated:</strong> No color change (contains chalk powder)</p>
+                <p><strong>Health risk:</strong> Chalk powder can cause stomach issues</p>
+            </div>
+        </div>
+
+        <!-- BMI Calculator -->
+        <div id="tab4" class="tab-content">
+            <h2><i class="fas fa-calculator"></i> BMI Calculator</h2>
+            <div class="input-group">
+                <label for="height"><i class="fas fa-ruler-vertical"></i> Height (cm):</label>
+                <input type="number" id="height" placeholder="Enter height in centimeters" min="100" max="250">
+                
+                <label for="weight"><i class="fas fa-weight"></i> Weight (kg):</label>
+                <input type="number" id="weight" placeholder="Enter weight in kilograms" min="30" max="300">
+            </div>
+            <button onclick="calculateBMI()" style="width: 100%;">
+                <i class="fas fa-calculator"></i> Calculate BMI
+            </button>
+
+            <div class="result-box" id="bmi-result">
+                <h3><i class="fas fa-chart-line"></i> Your Results</h3>
+                <div style="text-align: center; margin: 20px 0;">
+                    <div style="font-size: 2.5rem; font-weight: bold; color: var(--bmi-color);" id="bmi-value">0.0</div>
+                    <div style="font-size: 1.2rem; margin: 10px 0;" id="bmi-category">-</div>
+                </div>
+                
+                <p style="margin-bottom: 15px;" id="bmi-advice">Enter your height and weight to calculate your BMI.</p>
+                
+                <div class="bmi-scale">
+                    <div class="scale-segment" style="background: #4CAF50; flex: 1.85;">Underweight<br>&lt;18.5</div>
+                    <div class="scale-segment" style="background: #8BC34A; flex: 2.5;">Normal<br>18.5-25</div>
+                    <div class="scale-segment" style="background: #FFC107; flex: 2.5;">Overweight<br>25-30</div>
+                    <div class="scale-segment" style="background: #FF9800; flex: 2;">Obese I<br>30-35</div>
+                    <div class="scale-segment" style="background: #F44336; flex: 1.15;">Obese II<br>&gt;35</div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <h4><i class="fas fa-info-circle"></i> About BMI</h4>
+                    <p>Body Mass Index (BMI) is a screening tool that estimates body fat based on height and weight. While useful for population studies, it doesn't directly measure body fat and may not be accurate for athletes or elderly individuals.</p>
+                </div>
+            </div>
+        </div>
+
+        <footer style="text-align: center; padding: 20px; color: #666; font-size: 0.9rem;">
+            <p><i class="fas fa-exclamation-circle"></i> Disclaimer: This application provides general health information and is not a substitute for professional medical advice.</p>
+            <p style="margin-top: 10px;">© 2023 HealthHub - All rights reserved</p>
+        </footer>
+    </div>
+
+    <script>
+        // Tab navigation
+        function openTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // Medicine Checker
+        document.getElementById('med-image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // In a real app, this would use image recognition API
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    // Simulate API response
+                    setTimeout(() => {
+                        document.getElementById('med-result').style.display = 'block';
+                        // Scroll to results
+                        document.getElementById('med-result').scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }, 1000);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Symptom Checker
+        function analyzeSymptoms() {
+            const symptoms = document.getElementById('symptoms').value.toLowerCase();
+            const age = document.getElementById('age').value;
+            const gender = document.getElementById('gender').value;
+            
+            if (!symptoms) {
+                alert("Please describe your symptoms");
+                return;
+            }
+            
+            // Simple symptom analysis (in real app, connect to medical API)
+            let condition, symptomList, remedies;
+            
+            if ((symptoms.includes('fever') || symptoms.includes('temperature')) && 
+                (symptoms.includes('cough') || symptoms.includes('throat'))) {
+                condition = "Viral Upper Respiratory Infection";
+                symptomList = "Fever, cough, sore throat, runny nose";
+                remedies = [
+                    "Rest and stay hydrated",
+                    "Take Paracetamol (500mg every 6 hours) for fever/pain",
+                    "Use saline nasal drops for congestion",
+                    "Gargle with warm salt water for sore throat",
+                    "Consider OTC cough syrup if cough persists"
+                ];
+            } 
+            else if (symptoms.includes('headache')) {
+                condition = "Tension Headache";
+                symptomList = "Head pain, pressure around forehead";
+                remedies = [
+                    "Rest in a quiet, dark room",
+                    "Apply cold compress to forehead",
+                    "Take OTC pain reliever (Paracetamol or Ibuprofen)",
+                    "Practice relaxation techniques",
+                    "Ensure proper hydration"
+                ];
+            }
+            else {
+                condition = "General Symptoms - Needs Evaluation";
+                symptomList = "Various possible symptoms";
+                remedies = [
+                    "Monitor your symptoms",
+                    "Stay hydrated and rest",
+                    "Consider OTC medications for symptom relief",
+                    "Consult a doctor if symptoms worsen"
+                ];
+            }
+            
+            // Add gender/age specific advice
+            if (age < 18) {
+                remedies.push("For children, consult pediatrician before giving medications");
+            }
+            if (gender === 'female' && age > 12) {
+                remedies.push("Note: Some medications may not be suitable during pregnancy");
+            }
+            
+            // Update UI
+            document.getElementById('condition').textContent = condition;
+            document.getElementById('symptom-list').textContent = symptomList;
+            
+            const remediesList = document.getElementById('remedies');
+            remediesList.innerHTML = '';
+            remedies.forEach(remedy => {
+                const li = document.createElement('li');
+                li.textContent = remedy;
+                remediesList.appendChild(li);
+            });
+            
+            document.getElementById('health-result').style.display = 'block';
+            document.getElementById('health-result').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // BMI Calculator
+        function calculateBMI() {
+            const height = parseFloat(document.getElementById('height').value) / 100; // Convert to meters
+            const weight = parseFloat(document.getElementById('weight').value);
+            
+            if (!height || !weight || height < 1 || weight < 30) {
+                alert("Please enter valid height and weight");
+                return;
+            }
+            
+            const bmi = (weight / (height * height)).toFixed(1);
+            let category, advice;
+            
+            if (bmi < 18.5) {
+                category = "Underweight";
+                advice = "Consider consulting a nutritionist to develop a healthy weight gain plan. Focus on nutrient-dense foods and strength training.";
+            } 
+            else if (bmi < 25) {
+                category = "Normal weight";
+                advice = "Maintain your healthy lifestyle with balanced diet and regular exercise. Continue monitoring your health metrics.";
+            } 
+            else if (bmi < 30) {
+                category = "Overweight";
+                advice = "Consider increasing physical activity and making dietary adjustments. Small, sustainable changes often work best for long-term success.";
+            } 
+            else if (bmi < 35) {
+                category = "Obese (Class I)";
+                advice = "Consult with a healthcare provider about weight management strategies. Combination of diet, exercise, and behavioral changes may be recommended.";
+            } 
+            else {
+                category = "Obese (Class II)";
+                advice = "Strongly recommend medical consultation. A comprehensive approach including possible medication or other interventions may be necessary.";
+            }
+            
+            // Update UI
+            document.getElementById('bmi-value').textContent = bmi;
+            document.getElementById('bmi-category').textContent = category;
+            document.getElementById('bmi-advice').textContent = advice;
+            document.getElementById('bmi-result').style.display = 'block';
+            
+            // Highlight current BMI on scale
+            document.querySelectorAll('.scale-segment').forEach(seg => {
+                seg.style.opacity = '0.6';
+                seg.style.transform = 'scale(0.95)';
+            });
+            
+            if (bmi < 18.5) {
+                document.querySelector('.scale-segment:nth-child(1)').style.opacity = '1';
+                document.querySelector('.scale-segment:nth-child(1)').style.transform = 'scale(1)';
+            } 
+            else if (bmi < 25) {
+                document.querySelector('.scale-segment:nth-child(2)').style.opacity = '1';
+                document.querySelector('.scale-segment:nth-child(2)').style.transform = 'scale(1)';
+            } 
+            else if (bmi < 30) {
+                document.querySelector('.scale-segment:nth-child(3)').style.opacity = '1';
+                document.querySelector('.scale-segment:nth-child(3)').style.transform = 'scale(1)';
+            } 
+            else if (bmi < 35) {
+                document.querySelector('.scale-segment:nth-child(4)').style.opacity = '1';
+                document.querySelector('.scale-segment:nth-child(4)').style.transform = 'scale(1)';
+            } 
+            else {
+                document.querySelector('.scale-segment:nth-child(5)').style.opacity = '1';
+                document.querySelector('.scale-segment:nth-child(5)').style.transform = 'scale(1)';
+            }
+            
+            document.getElementById('bmi-result').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
